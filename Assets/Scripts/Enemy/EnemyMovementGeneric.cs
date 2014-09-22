@@ -1,35 +1,7 @@
 ﻿using System.Collections;
-using System.Linq;
 using UnityEngine;
 
-public abstract class EnemyMovement : MonoBehaviour {
-	protected bool isFrozen;
-
-	public virtual void OnEMP(float duration) {
-		StartCoroutine(Freeze(duration));
-	}
-
-	protected virtual IEnumerator Freeze(float duration) { // Notar la potencial herencia.
-		var animator = this.GetComponentInChildren<Animator>();
-		var gun = this.GetComponentInChildren<EnemyGun>();
-		var previousFireState = gun.holdFire;
-		var previousAnimationSpeed = animator.speed;
-
-		animator.speed = 0;
-		gun.holdFire = true;
-		isFrozen = true;
-
-		yield return new WaitForSeconds(duration);
-
-		isFrozen = false;
-		gun.holdFire = previousFireState;
-		animator.speed = previousAnimationSpeed;
-	}
-
-	public abstract void ForceMovement(Vector2 targetPosition, float movementSpeed);
-}
-
-public class EnemyMovementGeneric : EnemyMovement {
+public sealed class EnemyMovementGeneric : EnemyMovementBase {
 
 	public enum AIMode {
 		Undecided,
@@ -43,7 +15,8 @@ public class EnemyMovementGeneric : EnemyMovement {
 
 	private Vector2 startPos, endPos, currentPos;
 	private float timeCounter;
-
+	private float _forcedSpeed;
+	
 	#region AI values
 
 	public float DashChance, DashSpeed, DashMinDistance, DashMaxDistance, DashForward, DashBack, DashWait, DashBacktrackChance;
@@ -53,7 +26,6 @@ public class EnemyMovementGeneric : EnemyMovement {
 
 	private float _dashChance, _dashSpeed, _dashMinDistance, _dashMaxDistance, _dashForward, _dashBack, _dashWait, _dashBacktrackChance;
 	private float _hoverTime, _hoverSpeed;
-	private float _forcedSpeed;
 	private int _dashesInCycle;
 
 	private int sweepCounter;
@@ -61,31 +33,21 @@ public class EnemyMovementGeneric : EnemyMovement {
 
 	#endregion AI values
 
-	private float hMargin, vMargin;
-	private ReferenceFrame referenceFrame;
 	private Vector3 enemyToPlayerVector;
 
 	// Use this for initialization
-	private void Start() {
-		var spriteBounds =
-			this.GetComponentsInChildren<Renderer>()
-			.Aggregate(new Bounds(), (bounds, renderer) => { bounds.Encapsulate(renderer.bounds); return bounds; });
-		// Es como un foreach que acumula pero prefiero usar linq. :V
-
-		hMargin = spriteBounds.size.x / 2;
-		vMargin = spriteBounds.size.y / 2;
+	protected override void Start() {
+		base.Start();
 
 		startPos = endPos = Vector2.zero;
 		currentPos = rigidbody2D.position;
 		currentMode = AIMode.Undecided;
 
-		referenceFrame = GetComponentInParent<ReferenceFrame>();
-
 		UpdateAIVariables();
 	}
 
-	protected override IEnumerator Freeze(float duration) {
-		yield return StartCoroutine(base.Freeze(duration));
+	protected override IEnumerator FreezeCoroutine(float duration) {
+		yield return StartCoroutine(base.FreezeCoroutine(duration));
 		currentMode = AIMode.Undecided;
 	}
 
@@ -116,9 +78,7 @@ public class EnemyMovementGeneric : EnemyMovement {
 	private void Update() {
 		if (isFrozen) return;
 
-		Vector2 displacement = Vector2.zero;
-
-		displacement = CheckIfOffscreen(displacement);
+		var displacement = GetOffscreenDisplacement();
 
 		if (displacement != Vector2.zero) {
 			currentPos += displacement;
@@ -236,28 +196,6 @@ public class EnemyMovementGeneric : EnemyMovement {
 		}
 
 		this.rigidbody2D.MovePosition(currentPos);
-	}
-
-	private Vector2 CheckIfOffscreen(Vector2 displacement) {
-		if (this.rigidbody2D.position.y < ScreenBounds.Bottom - vMargin && referenceFrame.up.y > 0) {
-			// Si salimos por el borde inferior y el marco de referencia apunta hacia arriba.
-			displacement += Vector2.up * (ScreenBounds.VerticalDistance + 2 * vMargin);
-			// Se mueve todo hacia arriba.
-		} else if (this.rigidbody2D.position.y > ScreenBounds.Top + vMargin && referenceFrame.up.y < 0) {
-			// Si salimos por el borde superior y el marco de referencia apunta hacia abajo.
-			displacement -= Vector2.up * (ScreenBounds.VerticalDistance + 2 * vMargin);
-			// Se mueve todo hacia abajo.
-		}
-		if (this.rigidbody2D.position.x < ScreenBounds.Left - hMargin && referenceFrame.up.x > 0) {
-			// Si salimos por el border izquierdo y el marco de referencia apunta a la derecha.
-			displacement += Vector2.right * (ScreenBounds.HorizontalDistance + 2 * hMargin);
-			// Se mueve todo hacia la derecha.
-		} else if (this.rigidbody2D.position.x > ScreenBounds.Right + hMargin && referenceFrame.up.x < 0) {
-			// Si salimos por el border derecho y el marco de referencia apunta a la izquierda.
-			displacement -= Vector2.right * (ScreenBounds.HorizontalDistance + 2 * hMargin);
-			// Se mueve todo hacia la izquierda.
-		}
-		return displacement;
 	}
 
 	/*private void OnGUI() {

@@ -29,7 +29,7 @@ public class EMPController : SpecialPowerController {
 
 	private void OnTriggerEnter2D(Collider2D other) {
 		if (other.tag == "Enemy") {
-			other.GetComponentInParent<EnemyMovement>().OnEMP(duration);
+			other.GetComponentInParent<EnemyMovementBase>().Freeze(duration);
 		}
 	}
 

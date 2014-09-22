@@ -6,17 +6,14 @@ public class EnemyLife : MonoBehaviour {
 	public GUIText scorePopupPrefab;
 	public float regenerationTime;
 	public int scoreValue;
+	public bool immuneToNormalFire;
+	public bool immuneToShipCollision;
 	public bool doFriendlyFire;
-	public LayerMask layerMaskOfEnemies;
 	private GameObject explosionOrigin;
 
 	// Use this for initialization
 	private void Start() {
 		explosionOrigin = transform.Find("Spaceship/Explosion Origin").gameObject;
-	}
-
-	// Update is called once per frame
-	private void Update() {
 	}
 
 	public void OnHit(bool hitCameFromPlayer) {
@@ -41,46 +38,32 @@ public class EnemyLife : MonoBehaviour {
 		attachment.SetActive(true);
 	}
 
-	public void OnMagnetHit(float magnetDuration, float magnetForce) {
-		var enemies = Physics2D.OverlapCircleAll(rigidbody2D.position, ScreenBounds.HorizontalDistance, layerMaskOfEnemies);
-		GameObject bestTarget = null;
-		var closestDistanceSqr = Mathf.Infinity;
-		var currentPos = rigidbody2D.position;
-		Vector2 vectorEnemyToSelf = Vector2.zero;
-
-		foreach (var enemy in enemies) {
-			var enemyParent = enemy.transform.parent.gameObject;
-			var enemyPos = enemyParent.rigidbody2D.position;
-
-			vectorEnemyToSelf = enemyPos - currentPos;
-			var distanceToEnemySqr = vectorEnemyToSelf.sqrMagnitude;
-
-			if (distanceToEnemySqr < closestDistanceSqr && enemyParent.GetInstanceID() != this.gameObject.GetInstanceID()) {
-				bestTarget = enemyParent;
-				closestDistanceSqr = distanceToEnemySqr;
-			}
-		}
-		if (bestTarget != null) {
-			doFriendlyFire = true;
-			CrashShips(bestTarget, this.gameObject, magnetForce);
-		}
-	}
-
-	public void CrashShips(GameObject ship1, GameObject ship2, float magnetForce) {
-		var pos1 = ship1.rigidbody2D.position;
-		var pos2 = ship2.rigidbody2D.position;
-
-		ship1.GetComponent<EnemyMovement>().ForceMovement(pos2, magnetForce);
-		ship2.GetComponent<EnemyMovement>().ForceMovement(pos1, magnetForce);
-	}
-
 	private void OnTriggerEnter2D(Collider2D other) {
 		if (other.tag == "Player") {
-			OnHit(false);
-			other.gameObject.GetComponentInParent<PlayerLife>().OnHit();
-		} else if (doFriendlyFire && ((other.tag == "Enemy") || (other.tag == "EnemyAttachment"))) {
+			if (!immuneToShipCollision) OnHit(false);
+			other.GetComponentInParent<PlayerLife>().OnHit();
+		} else if (other.tag == "PlayerShield") {
 			OnHit(true);
-			other.gameObject.GetComponentInParent<EnemyLife>().OnHit(true);
+			other.GetComponentInParent<PlayerShield>().OnHit();
+		} else if (doFriendlyFire && ((other.tag == "Enemy") || (other.tag == "EnemyAttachment"))) {
+			if (!immuneToShipCollision) OnHit(true);
+			other.GetComponentInParent<EnemyLife>().OnHit(true);
+		}
+	}
+
+	public void attachElectricEffect(GameObject otherShip) {
+		_otherShip = otherShip;
+		showElectricEffect = true;
+	}
+
+	private bool showElectricEffect;
+	private GameObject _otherShip;
+
+	// Update is called once per frame
+	private void Update() {
+		if (showElectricEffect) {
+			Debug.DrawLine(this.rigidbody2D.position, _otherShip.rigidbody2D.position, Color.white);
+			// TODO: A real effect here.
 		}
 	}
 }

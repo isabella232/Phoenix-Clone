@@ -40,7 +40,6 @@ public class PlayerMovement : MonoBehaviour {
 		if (lifeCounter.radialMovement) RadialUpdate(hAxis); else RectagularUpdate(hAxis);
 	}
 
-	// Update is called once per frame
 	private void RectagularUpdate(float hAxis) {
 		var xPosition = this.rigidbody2D.position.x;
 

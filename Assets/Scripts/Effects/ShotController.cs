@@ -42,7 +42,8 @@ public class ShotController : MonoBehaviour {
 		if (disableDefaultBehavior) return;
 		if (isPlayerShot) {
 			if (other.tag == "Enemy") {
-				other.GetComponentInParent<EnemyLife>().OnHit(true);
+				var enemyLife = other.GetComponentInParent<EnemyLife>();
+				if (!enemyLife.immuneToNormalFire) enemyLife.OnHit(true);
 				Remove();
 			} else if (other.tag == "EnemyAttachment") {
 				other.GetComponentInParent<EnemyLife>().OnAttachmentHit(other.gameObject);
