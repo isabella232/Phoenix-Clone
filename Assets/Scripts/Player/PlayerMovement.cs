@@ -5,13 +5,14 @@ public class PlayerMovement : MonoBehaviour {
 	public bool radialMovement;
 	public float movementSpeed;
 	public float turnSpeed;
+	public AudioClip frozenSound;
 
 	private bool isFrozen;
 	private Animator shipAnimator;
 	private float leftBound, rightBound;
 	private float inputAngle;
 	private float vRadius, hRadius;
-	private LifeCounter lifeCounter;
+	private ReferenceFrame referenceFrame;
 
 	// Use this for initialization
 	private void Start() {
@@ -26,7 +27,7 @@ public class PlayerMovement : MonoBehaviour {
 		vRadius = ScreenBounds.Bottom + margin.y;
 		hRadius = ScreenBounds.Left + margin.x;
 
-		lifeCounter = FindObjectOfType<LifeCounter>();
+		referenceFrame = FindObjectOfType<ReferenceFrame>();
 	}
 
 	private float hAxis;
@@ -40,7 +41,7 @@ public class PlayerMovement : MonoBehaviour {
 	}
 
 	private void FixedUpdate() {
-		if (lifeCounter.radialMovement) RadialUpdate(hAxis); else RectagularUpdate(hAxis);
+		if (referenceFrame.radialMovement) RadialUpdate(hAxis); else RectagularUpdate(hAxis);
 	}
 
 	private void RectagularUpdate(float hAxis) {
@@ -92,7 +93,14 @@ public class PlayerMovement : MonoBehaviour {
 
 	IEnumerator FreezeCoroutine(float duration) {
 		isFrozen = true;
+		StartCoroutine(PlayFrozenEffect());
 		yield return new WaitForSeconds(duration);
 		isFrozen = false;
+	}
+	IEnumerator PlayFrozenEffect() {
+		while (isFrozen) {
+			this.audio.PlayOneShot(frozenSound);
+			yield return new WaitForSeconds(1);
+		}
 	}
 }

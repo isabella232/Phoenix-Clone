@@ -3,16 +3,23 @@ using UnityEngine;
 
 public class ReferenceFrame : MonoBehaviour {
 	public GameObject player;
+	public bool radialMovement;
 
 	[HideInInspector]
 	public Vector2 up, right;
 
 	// Use this for initialization
 	private void Start() {
+		if (!radialMovement) {
+			up = Vector2.up;
+			right = Vector2.right;
+		}
 	}
 
 	// Update is called once per frame
 	private void Update() {
+		if (!radialMovement) return;
+
 		if (player != null) {
 			/* En el sistema rectangular, el vector "abajo" (0, -1) acerca la nave enemiga al jugador, y todo lo demás
 			 * es en torno a eso.

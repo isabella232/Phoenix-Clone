@@ -30,14 +30,15 @@ public class WeightedEntry {
 }
 
 public class Spawner : MonoBehaviour {
-	private ReferenceFrame referenceFrame;
+	[HideInInspector]
+	public ReferenceFrame referenceFrame;
 	public WeightedEntry[] spawnables;
 	private RandomChoice pickupChooser;
 
 	public float minDelayBetweenSpawns, maxDelayBetweenSpawns;
 	public bool spawn;
 	public Rect spawnArea; // Relative to screen size.
-	public bool spawnOffscreen;
+	public SpawnBehavior specialBehavior;
 
 	// Use this for initialization
 	private void Start() {
@@ -50,10 +51,17 @@ public class Spawner : MonoBehaviour {
 		while (spawn) {
 			yield return new WaitForSeconds(Random.Range(minDelayBetweenSpawns, maxDelayBetweenSpawns));
 
-			var x = (spawnArea.x + Random.Range(-spawnArea.width / 2, spawnArea.width / 2)) * ScreenBounds.HorizontalDistance;
-			var y = (spawnArea.y + Random.Range(-spawnArea.height / 2, spawnArea.height / 2)) * ScreenBounds.VerticalDistance;
+			Vector2 position = Vector2.zero;
+			if (specialBehavior == null) {
+				var x = (spawnArea.x + Random.Range(-spawnArea.width / 2, spawnArea.width / 2)) * ScreenBounds.HorizontalDistance;
+				var y = (spawnArea.y + Random.Range(-spawnArea.height / 2, spawnArea.height / 2)) * ScreenBounds.VerticalDistance;
 
-			var pickup = Instantiate(pickupChooser.Choose(), new Vector2(x, y), Quaternion.identity) as GameObject;
+				position = new Vector2(x, y);
+			} else {
+				position = specialBehavior.GetPosition(this);
+			}
+
+			var pickup = Instantiate(pickupChooser.Choose(), position, Quaternion.identity) as GameObject;
 			pickup.transform.parent = this.transform;
 		}
 	}

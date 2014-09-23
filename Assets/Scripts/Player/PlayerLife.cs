@@ -9,7 +9,7 @@ public class PlayerLife : MonoBehaviour {
 
 	// Use this for initialization
 	private void Start() {
-		shield = GetComponent<PlayerShield>();
+		shield = GetComponentInChildren<PlayerShield>();
 		lifeCounter = FindObjectOfType<LifeCounter>();
 	}
 

@@ -26,7 +26,6 @@ public class LifeCounter : MonoBehaviour {
 	}
 
 	private float timeCounter;
-	public bool radialMovement;
 
 	public void Update() {
 		if (showHighScoreBox) {
@@ -160,7 +159,7 @@ public class LifeCounter : MonoBehaviour {
 		var enemies = GameObject.FindGameObjectsWithTag("EnemyController");
 		foreach (var enemy in enemies) {
 			enemy.GetComponentInChildren<EnemyGun>().holdFire = true;
-			enemy.GetComponentInChildren<EnemyMovementGeneric>().enabled = false;
+			enemy.GetComponentInChildren<EnemyMovementBase>().enabled = false;
 		}
 		yield return new WaitForSeconds(respawnTime);
 		foreach (var enemy in enemies) {

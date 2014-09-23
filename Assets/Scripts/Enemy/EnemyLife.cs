@@ -43,7 +43,7 @@ public class EnemyLife : MonoBehaviour {
 			if (!doesntKill) other.GetComponentInParent<PlayerLife>().OnHit();
 		} else if (other.tag == "PlayerShield") {
 			OnHit(true);
-			other.GetComponentInParent<PlayerShield>().OnHit();
+			other.transform.parent.GetComponentInChildren<PlayerShield>().OnHit();
 		} else if (doFriendlyFire && ((other.tag == "Enemy") || (other.tag == "EnemyAttachment"))) {
 			if (!immuneToShipCollision) OnHit(true);
 			other.GetComponentInParent<EnemyLife>().OnHit(true);

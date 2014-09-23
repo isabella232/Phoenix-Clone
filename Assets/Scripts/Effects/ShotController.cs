@@ -56,7 +56,7 @@ public class ShotController : MonoBehaviour {
 			other.GetComponentInParent<PlayerLife>().OnHit();
 			Remove();
 		} else if (other.tag == "PlayerShield") {
-			other.GetComponentInParent<PlayerShield>().OnHit();
+			other.transform.parent.GetComponentInChildren<PlayerShield>().OnHit();
 			Remove();
 		}
 	}
