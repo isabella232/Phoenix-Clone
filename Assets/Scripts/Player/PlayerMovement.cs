@@ -1,10 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour {
 	public bool radialMovement;
 	public float movementSpeed;
 	public float turnSpeed;
 
+	private bool isFrozen;
 	private Animator shipAnimator;
 	private float leftBound, rightBound;
 	private float inputAngle;
@@ -31,6 +33,7 @@ public class PlayerMovement : MonoBehaviour {
 
 	// Input va en update, fisicas van en FixedUpdate.
 	private void Update() {
+		if (isFrozen) return;
 		// Los controles están configurados en el input manager para que vayan a +-1 instantaneamente, para simular
 		// controles digitales.
 		hAxis = Input.GetAxis("Horizontal"); // +1 es entero a la derecha, -1 es entero a la izquierda, 0 es neutro;
@@ -81,5 +84,15 @@ public class PlayerMovement : MonoBehaviour {
 		} else {
 			shipAnimator.SetBool("IsMoving", false);
 		}
+	}
+
+	public void Freeze(float duration) {
+		StartCoroutine(FreezeCoroutine(duration));
+	}
+
+	IEnumerator FreezeCoroutine(float duration) {
+		isFrozen = true;
+		yield return new WaitForSeconds(duration);
+		isFrozen = false;
 	}
 }

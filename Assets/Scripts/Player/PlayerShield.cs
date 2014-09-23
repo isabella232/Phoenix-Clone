@@ -9,7 +9,7 @@ public class PlayerShield : MonoBehaviour {
 	public AudioClip shieldBlockSound;
 
 	[HideInInspector]
-	public bool ShieldIsUp;
+	public bool ShieldIsUp, isDisabled;
 	private Animator shieldAnimator;
 
 	// Use this for initialization
@@ -20,6 +20,7 @@ public class PlayerShield : MonoBehaviour {
 
 	// Update is called once per frame
 	private void Update() {
+		if (isDisabled) return;
 		if (!ShieldIsUp && Input.GetButtonDown("Fire2")) {
 			StartCoroutine(DoShield());
 		}
@@ -42,4 +43,14 @@ public class PlayerShield : MonoBehaviour {
 	public void OnHit() {
 		this.audio.PlayOneShot(shieldBlockSound);
 	}
+	public void Disable(float duration) {
+		StartCoroutine(DisableCoroutine(duration));
+	}
+
+	private IEnumerator DisableCoroutine(float duration) {
+		isDisabled = true;
+		yield return new WaitForSeconds(duration);
+		isDisabled = false;
+	}
+
 }

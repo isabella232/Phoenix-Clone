@@ -6,8 +6,7 @@ public class EnemyLife : MonoBehaviour {
 	public GUIText scorePopupPrefab;
 	public float regenerationTime;
 	public int scoreValue;
-	public bool immuneToNormalFire;
-	public bool immuneToShipCollision;
+	public bool immuneToNormalFire, immuneToShipCollision, doesntKill;
 	public bool doFriendlyFire;
 	private GameObject explosionOrigin;
 
@@ -41,7 +40,7 @@ public class EnemyLife : MonoBehaviour {
 	private void OnTriggerEnter2D(Collider2D other) {
 		if (other.tag == "Player") {
 			if (!immuneToShipCollision) OnHit(false);
-			other.GetComponentInParent<PlayerLife>().OnHit();
+			if (!doesntKill) other.GetComponentInParent<PlayerLife>().OnHit();
 		} else if (other.tag == "PlayerShield") {
 			OnHit(true);
 			other.GetComponentInParent<PlayerShield>().OnHit();

@@ -14,7 +14,7 @@ public class PlayerSpecial : MonoBehaviour {
 	public SpecialPowerController powerController;
 	public int powerCount;
 
-	private bool specialInAction;
+	private bool specialInAction, isDisabled;
 
 	// Use this for initialization
 	private void Start() {
@@ -23,6 +23,7 @@ public class PlayerSpecial : MonoBehaviour {
 
 	// Update is called once per frame
 	private void Update() {
+		if (isDisabled) return;
 		if (powerTemplate != null && powerCount > 0 && !specialInAction && Input.GetButtonDown("Fire3")) {
 			StartCoroutine(FireSpecial());
 		}
@@ -57,5 +58,15 @@ public class PlayerSpecial : MonoBehaviour {
 			this.powerCount = pickupAmount;
 			this.powerController = this.powerTemplate.GetComponent<SpecialPowerController>();
 		}
+	}
+
+	public void Disable(float duration) {
+		StartCoroutine(DisableCoroutine(duration));
+	}
+
+	private IEnumerator DisableCoroutine(float duration) {
+		isDisabled = true;
+		yield return new WaitForSeconds(duration);
+		isDisabled = false;
 	}
 }

@@ -10,7 +10,7 @@ public class PlayerGun : MonoBehaviour {
 	public int MaxShotsOnScreen;
 	public float ShotInterval;
 
-	private bool readyToFire;
+	private bool readyToFire, isDisabled;
 
 	private void Start() {
 		readyToFire = true;
@@ -18,6 +18,7 @@ public class PlayerGun : MonoBehaviour {
 	}
 
 	private void Update() {
+		if (isDisabled) return;
 		if (readyToFire && CurrentShotsOnScreen < MaxShotsOnScreen && Input.GetButtonDown("Fire1")) {
 			Fire();
 		}
@@ -36,5 +37,15 @@ public class PlayerGun : MonoBehaviour {
 	private IEnumerator ResetGun() {
 		yield return new WaitForSeconds(ShotInterval);
 		readyToFire = true;
+	}
+
+	public void Disable(float duration) {
+		StartCoroutine(DisableCoroutine(duration));
+	}
+
+	private IEnumerator DisableCoroutine(float duration) {
+		isDisabled = true;
+		yield return new WaitForSeconds(duration);
+		isDisabled = false;
 	}
 }
