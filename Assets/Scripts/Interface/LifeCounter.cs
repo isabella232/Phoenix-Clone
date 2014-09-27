@@ -14,6 +14,9 @@ public class LifeCounter : MonoBehaviour {
 	private UITransitionState transition;
 
 	private PlayerSpecial playerSpecial;
+	private ReferenceFrame referenceFrame;
+
+	private string winnerName = "AAA";
 
 	public void Start() {
 		currentLives = startingLives;
@@ -23,15 +26,27 @@ public class LifeCounter : MonoBehaviour {
 		timeCounter = 0;
 		transition = UITransitionState.Steady;
 		playerSpecial = FindObjectOfType<PlayerSpecial>();
+		referenceFrame = FindObjectOfType<ReferenceFrame>();
 	}
 
 	private float timeCounter;
+	private bool waitToReturnToTitleScreen;
+
+	private void GoToMenu() {
+		Application.LoadLevel("Title Screen");
+	}
 
 	public void Update() {
+		if (waitToReturnToTitleScreen) {
+			if (Input.anyKeyDown) {
+				FindObjectOfType<BackgroundManager>().FadeOut(GoToMenu);
+			}
+		}
+
 		if (showHighScoreBox) {
 			switch (transition) {
 				case UITransitionState.EasingIn:
-					timeCounter = Mathf.Clamp01(timeCounter + Time.deltaTime);
+					timeCounter = Mathf.Clamp01(timeCounter + Time.deltaTime * 2);
 
 					if (timeCounter >= 1) {
 						transition = UITransitionState.Steady;
@@ -39,9 +54,10 @@ public class LifeCounter : MonoBehaviour {
 					break;
 
 				case UITransitionState.EasingOut:
-					timeCounter = Mathf.Clamp01(timeCounter - Time.deltaTime);
+					timeCounter = Mathf.Clamp01(timeCounter - Time.deltaTime * 2);
 
 					if (timeCounter <= 0) {
+						showHighScoreBox = false;
 						transition = UITransitionState.Steady;
 					}
 					break;
@@ -52,7 +68,7 @@ public class LifeCounter : MonoBehaviour {
 		}
 
 		if (Input.GetKeyDown(KeyCode.F8)) {
-			scoreController.Award(1000);
+			scoreController.Award(scoreController.HighScore + 1);
 			FindObjectOfType<LifeCounter>().currentLives = 0;
 			FindObjectOfType<PlayerLife>().OnHit();
 		}
@@ -82,7 +98,7 @@ public class LifeCounter : MonoBehaviour {
 
 			CustomStyle.SetStyleData(GUI.skin.GetStyle("button"));
 
-			var size = new Vector2(0.3f, 0.3f);
+			var size = new Vector2(0.2f, 0.2f);
 			var center = new Vector2(0.5f, 0.5f);
 
 			var halfSize = size / 2;
@@ -95,7 +111,7 @@ public class LifeCounter : MonoBehaviour {
 
 			style.alignment = TextAnchor.MiddleCenter;
 			GUILayout.BeginArea(menuRect, boxStyle);
-			/*GUILayout.BeginVertical();
+			GUILayout.BeginVertical();
 			{
 				GUI.enabled = transition == UITransitionState.Steady;
 
@@ -106,14 +122,18 @@ public class LifeCounter : MonoBehaviour {
 
 				GUILayout.FlexibleSpace();
 
-				GUILayout.BeginHorizontal();
-				{
-					var name = GUILayout.TextField("AAA", 3);
-					if (GUILayout.Button("Guardar")) {
-					}
+				var textStyle = GUI.skin.GetStyle("textfield");
+				textStyle.fontSize = 24;
+				textStyle.font = CustomStyle.font;
+				winnerName = GUILayout.TextField(winnerName, 5);
+				if (GUILayout.Button("Guardar")) {
+					scoreController.SaveHighScore(winnerName);
+					timeCounter = 1;
+					transition = UITransitionState.EasingOut;
+					waitToReturnToTitleScreen = true;
 				}
 			}
-			GUILayout.EndVertical();*/
+			GUILayout.EndVertical();
 			GUILayout.EndArea();
 		}
 	}
@@ -140,17 +160,11 @@ public class LifeCounter : MonoBehaviour {
 	private void SpawnNewPlayer(Vector3 position, Quaternion rotation) {
 		var player = Instantiate(playerPrefab, position, rotation) as GameObject;
 		player.GetComponent<PlayerLife>().MakeInvincible(invincibleTime);
-		FindObjectOfType<ReferenceFrame>().player = player;
+		referenceFrame.player = player;
 		playerSpecial = player.GetComponentInChildren<PlayerSpecial>();
 	}
 
 	public IEnumerator PlayerLost() {
-		if (scoreController.IsNewHighScore) {
-			showHighScoreBox = true;
-			timeCounter = 0;
-			transition = UITransitionState.EasingIn;
-		}
-
 		foreach (var shot in GameObject.FindGameObjectsWithTag("Shot")) {
 			Destroy(shot);
 		}
@@ -165,5 +179,11 @@ public class LifeCounter : MonoBehaviour {
 			if (animator != null) animator.SetTrigger("Celebrate");
 		}
 		bgManager.PlayDeathSong();
+
+		if (scoreController.IsNewHighScore) {
+			showHighScoreBox = true;
+			timeCounter = 0;
+			transition = UITransitionState.EasingIn;
+		} else waitToReturnToTitleScreen = true;
 	}
 }

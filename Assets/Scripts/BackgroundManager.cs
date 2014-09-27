@@ -11,12 +11,15 @@ public class BackgroundManager : MonoBehaviour {
 	private bool isPaused;
 	private float timeDelta;
 
-	private Action onVolumeChangeReady;
-
 	// Use this for initialization
 	private void Start() {
 		LoadBackground();
 		timeDelta = 0;
+
+		var startAudioVolume = this.audio.volume;
+		this.audio.volume = 0;
+		this.audio.PlayDelayed(0.5f);
+		StartCoroutine(DoFade(null, 0, startAudioVolume, Color.black, Color.clear));
 	}
 
 	// Update is called once per frame
@@ -65,7 +68,7 @@ public class BackgroundManager : MonoBehaviour {
 			timeCounter += Time.deltaTime;
 		}
 		fadeTexture = null;
-		callback();
+		if (callback != null) callback();
 	}
 
 	private void LoadBackground() {
