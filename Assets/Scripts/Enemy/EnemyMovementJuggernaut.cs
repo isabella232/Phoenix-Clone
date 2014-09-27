@@ -13,7 +13,7 @@ public sealed class EnemyMovementJuggernaut : EnemyMovementBase {
 
 	private AIMode currentMode;
 
-	private Vector2 startPos, endPos, currentPos;
+	private Vector2 startPos, endPos;
 	private float startRotation, endRotation, currentRotation;
 	private float timeCounter;
 	private float _forcedSpeed;
@@ -37,7 +37,6 @@ public sealed class EnemyMovementJuggernaut : EnemyMovementBase {
 		base.Start();
 
 		startPos = endPos = Vector2.zero;
-		currentPos = rigidbody2D.position;
 		currentMode = AIMode.PreAim;
 
 		UpdateAIVariables();
@@ -79,6 +78,8 @@ public sealed class EnemyMovementJuggernaut : EnemyMovementBase {
 
 			return; // Continue movement next frame.
 		}
+
+		this.velocity = -currentPos; // velocidad(t2) = posicion(t2) - posicion(t1)
 
 		switch (currentMode) {
 			case AIMode.PreAim:
@@ -150,6 +151,8 @@ public sealed class EnemyMovementJuggernaut : EnemyMovementBase {
 			default:
 				return;	// Do nothing.
 		}
+
+		this.velocity += currentPos; // velocidad(t2) = posicion(t2) - posicion(t1)
 
 		this.rigidbody2D.MovePosition(currentPos);
 	}

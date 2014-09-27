@@ -9,7 +9,7 @@ public sealed class EnemyMovementGorgonBee : EnemyMovementBase {
 
 	private AIMode currentMode;
 
-	private Vector2 startPos, endPos, currentPos;
+	private Vector2 startPos, endPos;
 	private float timeCounter;
 	private float _forcedSpeed;
 
@@ -22,7 +22,6 @@ public sealed class EnemyMovementGorgonBee : EnemyMovementBase {
 		base.Start();
 
 		startPos = endPos = Vector2.zero;
-		currentPos = rigidbody2D.position;
 		currentMode = AIMode.Moving;
 	}
 
@@ -55,6 +54,8 @@ public sealed class EnemyMovementGorgonBee : EnemyMovementBase {
 			this.rigidbody2D.MoveRotation(enemyToPlayerAngle);
 		}
 
+		this.velocity = -currentPos; // velocidad(t2) = posicion(t2) - posicion(t1)
+
 		switch (currentMode) {
 			case AIMode.Moving:
 				if (referenceFrame.player == null) return;
@@ -74,6 +75,8 @@ public sealed class EnemyMovementGorgonBee : EnemyMovementBase {
 			default:
 				return;	// Do nothing.
 		}
+
+		this.velocity += currentPos; // velocidad(t2) = posicion(t2) - posicion(t1)
 
 		this.rigidbody2D.MovePosition(currentPos);
 	}

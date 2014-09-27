@@ -14,7 +14,7 @@ public class RandomChoice {
 	/* http://snippets.luacode.org/snippets/Weighted_random_choice_104 */
 
 	public GameObject Choose() {
-		var threshold = Random.Range(0, weightSum);
+		var threshold = Random.Range(0f, weightSum);
 		for (var i = 0; i < entries.Length; i++) {
 			threshold -= entries[i].weight;
 			if (threshold <= 0) return entries[i].element;
@@ -29,40 +29,66 @@ public class WeightedEntry {
 	public GameObject element;
 }
 
+[System.Serializable]
+public class Entry {
+	public int quantity;
+	public GameObject element;
+}
+
 public class Spawner : MonoBehaviour {
+	public WeightedEntry[] spawnables;
+	public Entry[] spawnAtWakeUp;
+
+	public bool spawn;
+	public float minDelayBetweenSpawns, maxDelayBetweenSpawns;
+	public Rect spawnArea; // Relative to screen size.
+	public bool searchForSpecialBehavior;
+	private SpawnBehavior specialBehavior;
+
 	[HideInInspector]
 	public ReferenceFrame referenceFrame;
-	public WeightedEntry[] spawnables;
-	private RandomChoice pickupChooser;
 
-	public float minDelayBetweenSpawns, maxDelayBetweenSpawns;
-	public bool spawn;
-	public Rect spawnArea; // Relative to screen size.
-	public SpawnBehavior specialBehavior;
+	private RandomChoice randomChoice;
 
 	// Use this for initialization
 	private void Start() {
-		referenceFrame = GetComponent<ReferenceFrame>();
-		pickupChooser = new RandomChoice(spawnables);
+		if (searchForSpecialBehavior) specialBehavior = GetComponent<SpawnBehavior>();
+
+		referenceFrame = GetComponentInParent<ReferenceFrame>();
+
+		randomChoice = new RandomChoice(spawnables);
+
+		if (spawnAtWakeUp.Length != 0) {
+			for (var i = 0; i < spawnAtWakeUp.Length; i++) {
+				for (var j = 0; j < spawnAtWakeUp[i].quantity; j++) {
+					Spawn(spawnAtWakeUp[i].element);
+				}
+			}
+		}
+
 		StartCoroutine(WaitAndSpawn());
 	}
 
 	private IEnumerator WaitAndSpawn() {
 		while (spawn) {
 			yield return new WaitForSeconds(Random.Range(minDelayBetweenSpawns, maxDelayBetweenSpawns));
-
-			Vector2 position = Vector2.zero;
-			if (specialBehavior == null) {
-				var x = (spawnArea.x + Random.Range(-spawnArea.width / 2, spawnArea.width / 2)) * ScreenBounds.HorizontalDistance;
-				var y = (spawnArea.y + Random.Range(-spawnArea.height / 2, spawnArea.height / 2)) * ScreenBounds.VerticalDistance;
-
-				position = new Vector2(x, y);
-			} else {
-				position = specialBehavior.GetPosition(this);
-			}
-
-			var pickup = Instantiate(pickupChooser.Choose(), position, Quaternion.identity) as GameObject;
-			pickup.transform.parent = this.transform;
+			Spawn(randomChoice.Choose());
 		}
+	}
+
+	private void Spawn(GameObject enemy) {
+		if (referenceFrame.player == null) return; // No spawns while player's dead.
+
+		var position = specialBehavior == null ? GetPosition() : specialBehavior.GetPosition();
+
+		var gameObject = Instantiate(enemy, position, Quaternion.identity) as GameObject;
+		gameObject.transform.parent = this.transform;
+	}
+
+	public Vector2 GetPosition() {
+		var x = (spawnArea.x + Random.Range(-spawnArea.width / 2, spawnArea.width / 2)) * ScreenBounds.Width;
+		var y = (spawnArea.y + Random.Range(-spawnArea.height / 2, spawnArea.height / 2)) * ScreenBounds.Height;
+
+		return new Vector2(x, y);
 	}
 }

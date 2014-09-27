@@ -27,6 +27,12 @@ public class PlayerLife : MonoBehaviour {
 		}
 	}
 
+	private void OnTriggerEnter2D(Collider2D other) {
+		if (other.tag == "Pickup") {
+			other.GetComponent<PickupsController>().OnHit();
+		}
+	}
+
 	public void MakeInvincible(float time) {
 		StartCoroutine(DoInvincibility(time));
 	}

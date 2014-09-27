@@ -39,6 +39,7 @@ public class EnemyLife : MonoBehaviour {
 
 	private void OnTriggerEnter2D(Collider2D other) {
 		if (other.tag == "Player") {
+			if (doFriendlyFire) return;
 			if (!immuneToShipCollision) OnHit(false);
 			if (!doesntKill) other.GetComponentInParent<PlayerLife>().OnHit();
 		} else if (other.tag == "PlayerShield") {
@@ -61,6 +62,10 @@ public class EnemyLife : MonoBehaviour {
 	// Update is called once per frame
 	private void Update() {
 		if (showElectricEffect) {
+			if (_otherShip == null) {
+				showElectricEffect = false;
+				return;
+			}
 			Debug.DrawLine(this.rigidbody2D.position, _otherShip.rigidbody2D.position, Color.white);
 			// TODO: A real effect here.
 		}

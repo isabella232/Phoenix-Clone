@@ -132,9 +132,9 @@ public class Menu : MonoBehaviour {
 		GUILayout.BeginVertical();
 		{
 			GUILayout.FlexibleSpace();
-			GUILayout.Label("Programado por Mauricio Salinas");
+			GUILayout.Label("Programado por Kyte");
 			GUILayout.Label("Assets sacados de internet");
-			GUILayout.Label("[details pending]");
+			GUILayout.Label("Para mayor información, ver descripción");
 			if (GUILayout.Button("Volver") || Input.GetKeyDown(KeyCode.Escape)) {
 				GoToState(MainMenuState.Title);
 			}

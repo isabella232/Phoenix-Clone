@@ -56,8 +56,6 @@ public class LifeCounter : MonoBehaviour {
 			FindObjectOfType<LifeCounter>().currentLives = 0;
 			FindObjectOfType<PlayerLife>().OnHit();
 		}
-
-		
 	}
 
 	public void OnGUI() {
@@ -163,7 +161,8 @@ public class LifeCounter : MonoBehaviour {
 		}
 		yield return new WaitForSeconds(respawnTime);
 		foreach (var enemy in enemies) {
-			enemy.GetComponentInChildren<Animator>().SetTrigger("Celebrate");
+			var animator = enemy.GetComponentInChildren<Animator>();
+			if (animator != null) animator.SetTrigger("Celebrate");
 		}
 		bgManager.PlayDeathSong();
 	}

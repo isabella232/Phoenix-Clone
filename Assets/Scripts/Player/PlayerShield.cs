@@ -6,16 +6,23 @@ public class PlayerShield : MonoBehaviour {
 	public GameObject gunObject;
 	public float shieldDurationSeconds;
 	public float shieldWarningSeconds;
+	public float shieldCooldownSeconds;
 	public AudioClip shieldBlockSound;
+	public float shotIntervalWithShield;
+	private float originalShotInterval;
+	private PlayerGun gun;
 
 	[HideInInspector]
 	public bool ShieldIsUp, isDisabled;
+
 	private Animator shieldAnimator;
 
 	// Use this for initialization
 	private void Start() {
 		ShieldIsUp = false;
 		shieldAnimator = shieldObject.GetComponent<Animator>();
+		gun = gunObject.GetComponent<PlayerGun>();
+		originalShotInterval = gun.ShotInterval;
 	}
 
 	// Update is called once per frame
@@ -27,7 +34,7 @@ public class PlayerShield : MonoBehaviour {
 	}
 
 	private IEnumerator DoShield() {
-		gunObject.SetActive(false);
+		gun.ShotInterval = shotIntervalWithShield;
 		shieldObject.SetActive(true);
 		ShieldIsUp = true;
 
@@ -37,12 +44,15 @@ public class PlayerShield : MonoBehaviour {
 
 		ShieldIsUp = false;
 		shieldObject.SetActive(false);
-		gunObject.SetActive(true);
+		gun.ShotInterval = originalShotInterval;
+
+		Disable(shieldCooldownSeconds);
 	}
 
 	public void OnHit() {
 		this.audio.PlayOneShot(shieldBlockSound);
 	}
+
 	public void Disable(float duration) {
 		StartCoroutine(DisableCoroutine(duration));
 	}
@@ -52,5 +62,4 @@ public class PlayerShield : MonoBehaviour {
 		yield return new WaitForSeconds(duration);
 		isDisabled = false;
 	}
-
 }

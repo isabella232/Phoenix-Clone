@@ -6,9 +6,11 @@ public class EnemyGun : MonoBehaviour {
 	public float fireChance;
 	public float fireInterval;
 	public bool holdFire;
+	private EnemyMovementBase movementController;
 
 	// Use this for initialization
 	private void Start() {
+		movementController = GetComponentInParent<EnemyMovementBase>();
 		StartCoroutine(FireGun());
 	}
 
@@ -17,7 +19,7 @@ public class EnemyGun : MonoBehaviour {
 	}
 
 	private IEnumerator FireGun() {
-		while (!holdFire) {
+		while (!holdFire || movementController.IsOffscreen()) {
 			yield return new WaitForSeconds(fireInterval);
 			if (Random.value <= fireChance) {
 				Instantiate(shotPrefab, this.transform.position, this.transform.rotation);

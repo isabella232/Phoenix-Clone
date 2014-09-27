@@ -20,9 +20,13 @@ public class MagnetShotController : SpecialPowerController {
 		if (other.tag == "Enemy" || other.tag == "EnemyAttachment") {
 			var victimPrimaryLife = other.GetComponentInParent<EnemyLife>();
 			var victimSecondary = FindClosestEnemy(victimPrimaryLife.gameObject);
+			var victimSecondaryLife = victimSecondary.GetComponentInParent<EnemyLife>();
 
 			if (victimSecondary != null) {
 				victimPrimaryLife.doFriendlyFire = true;
+				victimPrimaryLife.doesntKill = false;
+				victimSecondaryLife.doFriendlyFire = true;
+				victimSecondaryLife.doesntKill = false;
 				victimPrimaryLife.attachElectricEffect(victimSecondary);
 
 				var posPrimary = victimPrimaryLife.rigidbody2D.position;
@@ -40,7 +44,7 @@ public class MagnetShotController : SpecialPowerController {
 	}
 
 	private GameObject FindClosestEnemy(GameObject victimPrimary) {
-		var enemies = Physics2D.OverlapCircleAll(victimPrimary.rigidbody2D.position, ScreenBounds.HorizontalDistance, layerMaskOfEnemies);
+		var enemies = Physics2D.OverlapCircleAll(victimPrimary.rigidbody2D.position, ScreenBounds.Width, layerMaskOfEnemies);
 		GameObject victimSecondary = null;
 		var closestDistanceSqr = Mathf.Infinity;
 		var currentPos = rigidbody2D.position;
